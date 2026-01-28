@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kotak Saran OSIS</title>
+
+  <style>
+    /* POPUP SENSOR (GLITCH) */
+ .popupSensor{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  padding: 25px;
+  width: 300px;
+
+  background: rgba(0,0,0,0.25); /* transparan */
+  backdrop-filter: blur(10px);
+
+  color: white;
+  text-align: center;
+  border-radius: 12px;
+
+  border: 2px solid rgba(255,0,150,0.7); /* neon pink transparent */
+  box-shadow: 0 0 20px rgba(25,0,250,1.0);
+
+  opacity: 0;
+  z-index: 99999;
+  animation: popupBoom 0.35s ease-out forwards;
+}
+
+    @keyframes popupBoom{
+      0%{transform: translate(-50%, -50%) scale(0.4) rotate(6deg); opacity:0;}
+      60%{transform: translate(-50%, -50%) scale(1.06) rotate(-2deg); opacity:1;}
+      100%{transform: translate(-50%, -50%) scale(1); opacity:1;}
+    }
+
+    .popupSensor.glitch{
+      animation: popupBoom 0.35s ease-out forwards, glitchAnim 0.35s linear infinite;
+    }
+    @keyframes glitchAnim {
+      0% { transform: translate(-50%, -50%) skew(0deg); }
+      20% { transform: translate(calc(-50% + 3px), calc(-50% - 3px)) skew(2deg); }
+      40% { transform: translate(calc(-50% - 2px), calc(-50% + 2px)) skew(-2deg); }
+      60% { transform: translate(calc(-50% + 1px), calc(-50% + 1px)); }
+      80% { transform: translate(calc(-50% - 1px), calc(-50% - 1px)) skew(1deg); }
+      100% { transform: translate(-50%, -50%) skew(0deg); }
+    }
+
+    .popupBtn{
+      margin-top: 12px;
+      padding: 8px 18px;
+      border-radius: 6px;
+      border: none;
+      background: #64fffb;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* POPUP SUKSES / WARNING (share visual style) */
+  .popupSuccess{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  padding: 25px;
+  width: 300px;
+
+  background: rgba(0,255,150,0.15); /* transparan hijau */
+  backdrop-filter: blur(10px);
+
+  color: white;
+  text-align: center;
+  border-radius: 12px;
+
+  border: 2px solid rgba(0,255,150,0.8);
+  box-shadow: 0 0 20px rgba(0,255,150,0.4);
+
+  opacity: 0;
+  z-index: 99999;
+  animation: popupBoomSuccess 0.4s ease-out forwards;
+}
+
+    @keyframes popupBoomSuccess{
+      0%{transform: translate(-50%, -50%) scale(0.4); opacity:0;}
+      60%{transform: translate(-50%, -50%) scale(1.06); opacity:1;}
+      100%{transform: translate(-50%, -50%) scale(1); opacity:1;}
+    }
+
+    .popupBtnSuccess{
+      margin-top: 12px;
+      padding: 8px 18px;
+      border-radius: 6px;
+      border: none;
+      background: rgb(0,255,150);
+      color: black;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* ===========================================================
+       STYLES LAINNYA (tidak berubah selain scanner dihapus)
+       ========================================================== */
+    body{
+      font-family:Arial, sans-serif;
+      margin:0;
+      padding:35px;
+
+      /* 🌈 BASE BACKGROUND */
+      background: conic-gradient(
+        from 0deg,
+        black, #00f7ff, blue, magenta, black, #ff8178, magenta, blue, black
+      );
+      background-size: 200% 200%;
+      animation: spinBg 12s linear infinite;
+
+      overflow:hidden;
+    }
+
+    @keyframes spinBg{
+      0%{filter:hue-rotate(0deg)}
+      100%{filter:hue-rotate(360deg)}
+    }
+
+    /* canvas effects */
+    canvas.rgbLayer{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      pointer-events:none;
+      mix-blend-mode:screen;
+    }
+
+    /* small opacity tuning for each layer */
+    #wave3d{opacity:0.45}
+    #particles{opacity:0.75}
+    #lightning{opacity:1}
+    #galaxy{opacity:0.85}
+
+    /* BOX */
+    .box, .box h2, .box h3, .box h4, .box label {
+      color: white !important;
+    }
+
+    .box{
+      max-width:480px;
+      margin:auto;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding:25px;
+      border-radius:30px;
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow:0 8px 25px rgba(0,0,0,0.35);
+    }
+
+    h2{text-align:center}
+    label{display:block;margin-top:8px}
+    input, textarea, select{
+      width:90%;
+      padding:10px;
+      margin-top:5px;
+      border-radius:6px;
+      border:2px solid #000000;
+      background: rgba(255,255,255,0.95);
+    }
+    button{
+      margin-top:15px;
+      padding:10px;
+      border:none;
+      border-radius:6px;
+      background:#000;
+      color:#fff;
+      cursor:pointer;
+    }
+
+    /* responsive small */
+    @media (max-width:480px){
+      body{padding:18px}
+      .box{padding:18px}
+    }
+
+
+  canvas.galaxyLayer{
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.35;
+  }
+</style>
+  
+</head>
+
+<body>
+  
+
+<!-- CANVAS LAYERS (scanner removed) -->
+<canvas id="particles" class="rgbLayer"></canvas>
+<canvas id="galaxy" class="galaxyLayer"></canvas>
+
+<div class="box">
+  <h2>Kotak Saran Digital</h2>
+  <h4>Kirimkan Pesan atau saran kepada OSIS untuk diteruskan kepada Sekolah!</h4>
+
+  <label>Nama Lengkap</label>
+  <input id="name" type="text" placeholder="Masukkan nama anda">
+
+  <!-- DROPDOWN KELAS -->
+  <label>Kelas</label>
+  <select id="kelas">
+    <option value="">Pilih Kelas</option>
+    <!-- Kelas 7 -->
+    <option>7A</option><option>7B</option><option>7C</option><option>7D</option>
+    <option>7E</option><option>7F</option><option>7G</option><option>7H</option>
+    <!-- Kelas 8 -->
+    <option>8A</option><option>8B</option><option>8C</option><option>8D</option>
+    <option>8E</option><option>8F</option><option>8G</option><option>8H</option>
+    <!-- Kelas 9 -->
+    <option>9A</option><option>9B</option><option>9C</option><option>9D</option>
+    <option>9E</option><option>9F</option><option>9G</option><option>9H</option>
+  </select>
+
+  <label>Kategori</label>
+  <select id="category">
+    <option>Saran</option>
+    <option>Kritik</option>
+  </select>
+
+  <label>Pesan</label>
+  <textarea id="message" rows="5"></textarea>
+
+  <button onclick="kirim()">Kirim</button>
+  <br><br>
+
+  <h3>© copyright 2025 </h3>
+  <h4>Dev:Maulana Sayid</h4>
+  <h4>OSIS Periode 2026-2027</h4>
+</div>
+
+<script>
+ 
+
+/* ---------- canvas sizing helper ---------- */
+function sizeCanvas(c){
+  c.width = innerWidth;
+  c.height = innerHeight;
+}
+
+/* ========== PARTICLES ========== */
+const cParticles = document.getElementById('particles');
+const ctxParticles = cParticles.getContext('2d');
+sizeCanvas(cParticles);
+
+let particles = Array.from({length:80}).map(()=>({
+  x: Math.random()*innerWidth,
+  y: Math.random()*innerHeight,
+  vx: (Math.random()*2 -1),
+  vy: (Math.random()*2 -1),
+  hue: Math.random()*360
+}));
+
+function drawParticles(){
+  ctxParticles.clearRect(0,0,innerWidth,innerHeight);
+  particles.forEach(pt=>{
+    pt.x += pt.vx;
+    pt.y += pt.vy;
+    pt.hue += 1;
+
+    if(pt.x<0) pt.x=innerWidth;
+    if(pt.x>innerWidth) pt.x=0;
+    if(pt.y<0) pt.y=innerHeight;
+    if(pt.y>innerHeight) pt.y=0;
+
+    ctxParticles.fillStyle = `hsla(${pt.hue},100%,60%,0.9)`;
+    ctxParticles.beginPath();
+    ctxParticles.arc(pt.x,pt.y,3,0,Math.PI*2);
+    ctxParticles.fill();
+  });
+}
+
+/* ========== GALAXY (STABIL & RINGAN) ========== */
+const cGalaxy = document.getElementById('galaxy');
+const ctxGalaxy = cGalaxy.getContext('2d');
+sizeCanvas(cGalaxy);
+
+let galaxyParticles = Array.from({length:140}).map(()=>({
+  angle: Math.random()*Math.PI*2,
+  radius: Math.random()*360 + 30,
+  speed: 0.00012 + Math.random()*0.0025, // 🐢 super pelan & stabil
+  hue: Math.random()*360
+}));
+
+function drawGalaxy(){
+  ctxGalaxy.clearRect(0,0,cGalaxy.width,cGalaxy.height);
+  const cx = cGalaxy.width / 2;
+  const cy = cGalaxy.height / 2;
+
+  galaxyParticles.forEach(star=>{
+    // gerakan spiral
+    star.angle += star.speed;
+
+    // efek kelap-kelip
+    star.twinkle = (star.twinkle || Math.random()) + 0.020;
+    const pulse = Math.sin(star.twinkle) * 0.8 + 1;
+
+    const x = cx + Math.cos(star.angle) * star.radius;
+    const y = cy + Math.sin(star.angle) * star.radius;
+
+    const size = (star.size || (star.size = Math.random()*3 + 1.5)) * pulse;
+
+    ctxGalaxy.save();
+    ctxGalaxy.translate(x, y);
+
+    // warna galaxy
+    ctxGalaxy.strokeStyle = `hsla(${star.hue},90%,75%,0.85)`;
+    ctxGalaxy.shadowColor = `hsla(${star.hue},100%,80%,0.9)`;
+    ctxGalaxy.shadowBlur = 12;
+    ctxGalaxy.lineWidth = 0.9;
+
+    // bentuk sparkle star ✨
+    ctxGalaxy.beginPath();
+    ctxGalaxy.moveTo(-size, 0);
+    ctxGalaxy.lineTo(size, 0);
+    ctxGalaxy.moveTo(0, -size);
+    ctxGalaxy.lineTo(0, size);
+    ctxGalaxy.stroke();
+
+    ctxGalaxy.restore();
+
+    // perubahan warna pelan
+    star.hue += 0.15;
+  });
+}
+
+
+/* MASTER ANIMATE LOOP */
+function animate(now){
+  drawParticles();
+  drawGalaxy();
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+/* RESIZE HANDLING */
+window.addEventListener('resize', ()=>{
+  sizeCanvas(cParticles);
+  sizeCanvas(cGalaxy);
+});
+
+/* ========== SENSOR KATA KOTOR ========== */
+const kataKasar = [
+  "anjing","bangsat","kontol","ngentot","memek","babi",
+  "tolol","goblok","idiot","kampret","setan",
+  "asu","tai","brengsek","perek","pepek","tytyd","kentot","titit","titid","tod","ajg","peler", "Nigga"
+];
+
+function adaKataKasar(teks){
+  teks = (teks||"").toLowerCase();
+  return kataKasar.some(k => teks.includes(k));
+}
+
+/* POPUP helpers */
+function showSensorPopup(){
+  const prev = document.querySelector('.popupSensor');
+  if(prev) prev.remove();
+
+  const box = document.createElement('div');
+  box.className = 'popupSensor';
+  box.innerHTML = `
+    <h3>⚠ Kata Tidak Pantas Terdeteksi</h3>
+    <p>Harap perbaiki pesan sebelum mengirim.</p>
+    <button class="popupBtn">OK</button>
+  `;
+  document.body.appendChild(box);
+  const btn = box.querySelector('.popupBtn');
+  btn.addEventListener('click', ()=> box.remove());
+  setTimeout(()=> box.classList.add('glitch'), 360);
+}
+
+function showSuccessPopup(){
+  const prev = document.querySelector('.popupSuccess');
+  if(prev) prev.remove();
+
+  const box = document.createElement('div');
+  box.className = 'popupSuccess';
+  box.innerHTML = `
+    <h2>✔ Pesan Berhasil Terkirim!</h2>
+    <p>Terima kasih sudah mengirimkan pesan kepada OSIS!!</p>
+    <button class="popupBtnSuccess">OK</button>
+  `;
+  document.body.appendChild(box);
+  box.querySelector('.popupBtnSuccess').onclick = ()=> box.remove();
+}
+
+function showWarningPopup(text){
+  const old = document.querySelector(".popupWarning");
+  if(old) old.remove();
+
+  const box = document.createElement("div");
+  box.className = "popupWarning";
+  box.style.position = "fixed";
+  box.style.top = "50%";
+  box.style.left = "50%";
+  box.style.transform = "translate(-50%, -50%) scale(0.5)";
+  box.style.width = "300px";
+  box.style.padding = "25px";
+
+  /* Transparan + Glass */
+  box.style.background = "rgba(255,165,0,0.12)";
+  box.style.backdropFilter = "blur(10px)";
+  box.style.border = "2px solid rgba(255,165,0,0.9)";
+  box.style.boxShadow = "0 0 20px rgba(255,165,0,0.45)";
+  box.style.borderRadius = "12px";
+
+  box.style.color = "white";
+  box.style.textAlign = "center";
+  box.style.zIndex = "99999";
+  box.style.animation = "popupBoomSuccess 0.4s ease-out forwards";
+
+  box.innerHTML = `
+    <h3>Peringatan</h3>
+    <p>${text}</p>
+    <button style="
+      margin-top:12px;
+      padding:8px 18px;
+      border-radius:6px;
+      border:none;
+      background: rgba(255,165,0,0.8);
+      color:black;
+      cursor:pointer;
+      font-weight:bold;
+    ">OK</button>
+  `;
+
+  box.querySelector("button").onclick = ()=> box.remove();
+
+  document.body.appendChild(box);
+}
+
+/* Warning popup (untuk field kosong) — tampil seperti popupSuccess */
+/* === POPUP WARNING TRANSPARAN (GLASS ORANGE) === */
+function showWarningPopup(text){
+  const prev = document.querySelector('.popupWarning');
+  if(prev) prev.remove();
+
+  const box = document.createElement('div');
+  box.className = 'popupWarning';
+  box.style.position = "fixed";
+  box.style.top = "50%";
+  box.style.left = "50%";
+  box.style.transform = "translate(-50%, -50%) scale(0.5)";
+  box.style.padding = "25px";
+  box.style.width = "300px";
+
+  box.style.background = "rgba(255,165,0,0.12)"; // transparan orange
+  box.style.border = "2px solid rgba(255,165,0,0.9)";
+  box.style.boxShadow = "0 0 20px rgba(255,165,0,0.4)";
+  box.style.backdropFilter = "blur(10px)";
+  box.style.borderRadius = "12px";
+  box.style.color = "white";
+  box.style.textAlign = "center";
+  box.style.zIndex = "99999";
+  box.style.opacity = "0";
+  box.style.animation = "popupBoomSuccess 0.4s ease-out forwards";
+
+  box.innerHTML = `
+    <h2>⚠ Perhatian</h2>
+    <p>${text}</p>
+    <button class="btnWarn">OK</button>
+  `;
+
+  document.body.appendChild(box);
+
+  const btn = box.querySelector(".btnWarn");
+  btn.style.marginTop = "12px";
+  btn.style.padding = "8px 18px";
+  btn.style.borderRadius = "6px";
+  btn.style.border = "none";
+  btn.style.background = "rgba(255,165,0,0.85)";
+  btn.style.color = "black";
+  btn.style.fontWeight = "bold";
+  btn.style.cursor = "pointer";
+
+  btn.onclick = ()=> box.remove();
+}
+
+/* ========== STORAGE & KIRIM ========== */
+/* ========== ANTI SPAM STATE ========== */
+const SPAM_DELAY = 60 * 1000; // 30 detik
+const MAX_PER_DAY = 5;
+
+function todayKey(){
+  const d = new Date();
+  return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+}
+
+function kirim(){
+  const nama = document.getElementById('name').value.trim();
+  const kelas = document.getElementById('kelas').value.trim();
+  const kategori = document.getElementById('category').value;
+  const msg = document.getElementById('message').value.trim();
+
+  /* ===== VALIDASI ===== */
+  if(!nama){
+    showWarningPopup("Nama harus diisi!");
+    return;
+  }
+  if(!kelas){
+    showWarningPopup("Kelas harus dipilih!");
+    return;
+  }
+  if(!msg){
+    showWarningPopup("Pesan tidak boleh kosong!");
+    return;
+  }
+
+  /* ===== SENSOR KATA KASAR ===== */
+  if(adaKataKasar(nama) || adaKataKasar(msg)){
+    showSensorPopup();
+    return;
+  }
+
+  /* ===== ANTI SPAM ===== */
+
+  const now = Date.now();
+  const lastSend = Number(localStorage.getItem("lastSend") || 0);
+  if(now - lastSend < SPAM_DELAY){
+    const sisa = Math.ceil((SPAM_DELAY - (now - lastSend)) / 1000);
+    showWarningPopup("Tunggu " + sisa + " detik sebelum mengirim lagi.");
+    return;
+  }
+
+  // duplicate message check
+  const lastMsg = localStorage.getItem("lastMessage") || "";
+  if(lastMsg === msg){
+    showWarningPopup("Pesan yang sama tidak boleh dikirim berulang.");
+    return;
+  }
+
+  // limit harian
+  const key = "count_" + todayKey();
+  let count = Number(localStorage.getItem(key) || 0);
+  if(count >= MAX_PER_DAY){
+    showWarningPopup("Batas pengiriman hari ini sudah tercapai (maks 5 pesan).");
+    return;
+  }
+
+  /* ===== SIMPAN KE FIREBASE ===== */
+  const dataRef = db.ref("pesan");
+  const newData = dataRef.push();
+
+  newData.set({
+    name: nama,
+    kelas: kelas,
+    category: kategori,
+    message: msg,
+    time: new Date().toLocaleString(),
+    read: false
+  })
+  .then(()=>{
+    // update anti spam memory
+    localStorage.setItem("lastSend", now);
+    localStorage.setItem("lastMessage", msg);
+    localStorage.setItem(key, count + 1);
+
+    // sukses
+    showSuccessPopup();
+
+    // clear input
+    document.getElementById('message').value = '';
+    document.getElementById('name').value = '';
+    document.getElementById('kelas').value = '';
+  })
+  .catch((error)=>{
+    alert("Gagal menyimpan ke database: " + error.message);
+  });
+}
+
+
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCUSJCbXSkq11GiVUM-97rUNSjjdn_imBE",
+    authDomain: "kotaksaranosis-2886e.firebaseapp.com",
+    databaseURL: "https://kotaksaranosis-2886e-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "kotaksaranosis-2886e",
+    storageBucket: "kotaksaranosis-2886e.appspot.com",
+    messagingSenderId: "377217259234",
+    appId: "1:377217259234:web:b099cf89b43320ef1ab0bb"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  
+</script>
+
+
+</body>
+</html>
